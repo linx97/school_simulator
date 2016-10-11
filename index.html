@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>School Simulator</title>
+	<script   src="http://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+</head>
+<body>
+	<button id="getgrades">Get Grades</button>
+	<div id="showgrades"></div>
+	<br>
+	<button id="getsched">Get Schedule</button>
+	<div id="showsched"></div>
+	<br>
+	<input id="addclass" />
+	<button id="sendaddclass">Add Class</button>
+	<br><br>
+	<input id="classname" />
+	<button id="checkhwstatus">Get Homework Status</button>
+	<div id="hwstatus"></div>
+	<br>
+	<input id="hwdone" />
+	<button id="sendhwdone">Mark Homework as Done</button>
+	<br><br>
+	<button id="allhw">Get Homework Status for All</button>
+	<div id="showallhw"></div>
+
+
+	<script>
+		// shows grades
+		function getGrades() {
+			$.get("/grades", function(response) {
+				var g = JSON.parse(response);
+				var output = [];
+				for (var i of g) {
+					output.push(i.name + ": " + i.grade);
+				}
+				output = output.join("\n");
+				$('#showgrades').text(output);
+			});
+		}
+
+		$('#getgrades').click(getGrades);
+
+		// shows schedule
+		function getSchedule() {
+			$.get("/schedule", function(response) {
+				var s = JSON.parse(response);
+				var output = [];
+				for (var i of s) {
+					output.push(i.name);
+				}
+				output = output.join(", ");
+				$('#showsched').text(output);
+				
+			});
+		}
+
+		$('#getsched').click(getSchedule);
+
+		// adds class to schedule
+		function addToSchedule(class_name) {
+			$.post("/class", class_name, function(response) {
+				//do nothing
+			});
+		}
+
+		$('#sendaddclass').click(function() {
+			addToSchedule($('#addclass').val());
+			$('#addclass').val("");
+		});
+
+		// shows homework status
+		function getHomeworkStatus(class_name) {
+			$.get("/homework", function(response) {
+				var h = JSON.parse(response);
+				for (var i of h) {
+					if (i.name === class_name) {
+						$('#hwstatus').text(i.hw);
+						return;
+					} else {
+						console.log("Incorrect class name.");
+					}
+				}
+			});
+		}
+
+		$('#checkhwstatus').click(function() {
+			getHomeworkStatus($('#classname').val());
+			$('#classname').val("");
+		});
+
+		// marks homework as complete
+		function markAsDone(class_name) {
+			$.post("/homework", class_name, function(response) {
+				//do nothing
+			});
+		}
+
+		$('#sendhwdone').click(function() {
+			addToSchedule($('#hwdone').val());
+			$('#hwdone').val("");
+		});
+
+		// shows homework status for all classes
+		function getCompleteHomeworkStatus() {
+			$.get("/homework", function(response) {
+				var h = JSON.parse(response);
+				var output = [];
+				for (var i of h) {
+					output.push(i.name + ": " + i.hw);
+				}
+				output = output.join(", ");
+				$('#showallhw').text(output);
+			});
+		}
+
+		$('#allhw').click(getCompleteHomeworkStatus);
+
+	</script>
+</body>
+</html>
